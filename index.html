@@ -1,0 +1,72 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDA Topic Modeling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        textarea, input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LDA Topic Modeling</h1>
+        <form id="ldaForm">
+            <textarea name="text" rows="8" placeholder="Enter your document(s), separate by new lines." required></textarea>
+            <input type="number" name="n_topics" placeholder="Number of topics (default: 3)" value="3" min="1">
+            <input type="number" name="n_words" placeholder="Words per topic (default: 5)" value="5" min="1">
+            <button type="submit">Analyze Topics</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById("ldaForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch("/process", {
+                method: "POST",
+                body: formData,
+            });
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "Loading...";
+            if (response.ok) {
+                const data = await response.json();
+                resultDiv.innerHTML = "<h2>Topics:</h2>" + Object.entries(data).map(
+                    ([topic, words]) =>
+                        `<p><strong>${topic}</strong>: ${words.join(", ")}</p>`
+                ).join("");
+            } else {
+                const error = await response.json();
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.error}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
